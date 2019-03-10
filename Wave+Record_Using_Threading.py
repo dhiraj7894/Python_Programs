@@ -1,10 +1,11 @@
-import pyaudio #importing 
+import pyaudio #importing PyAudio
 import struct #importing Struct
 import numpy as np #importing numpy
 import matplotlib.pyplot as plt #importing matplotlib for ploting graphs
 import pandas as pd #import pandas
 import wave
-import threading
+import multiprocessing as mltp
+#import threading
 
 %matplotlib tk
 def task1():
@@ -75,8 +76,8 @@ def task2():
     waveFile.close()
 
 if __name__ == "__main__":
-    t1 = threading.Thread(target = task1)
-    t2 = threading.Thread(target = task2)
+    t1 =mltp.Process(target = task1)
+    t2 =mltp.Process(target = task2)
     t1.start()
     t2.start()
     t1.join()
