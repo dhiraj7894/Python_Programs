@@ -1,4 +1,4 @@
-import pyaudio #importing PyAudio
+import pyaudio #importing 
 import struct #importing Struct
 import numpy as np #importing numpy
 import matplotlib.pyplot as plt #importing matplotlib for ploting graphs
