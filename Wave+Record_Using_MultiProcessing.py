@@ -2,17 +2,17 @@ import pyaudio #importing PyAudio
 import struct #importing Struct
 import numpy as np #importing numpy
 import matplotlib.pyplot as plt #importing matplotlib for ploting graphs
-import pandas as pd #import pandas
 import wave
 import multiprocessing as mltp
 import time
+import serial  
+
 
 CHUNK = 500 * 2 
 FORMAT = pyaudio.paInt16
-RATE = 44100
+RATE = 44100 
 
 RECORD_SECONDS = 1
-
 
 def task1():
     %matplotlib tk
@@ -37,7 +37,7 @@ def task1():
         data_int = np.array(struct.unpack(str(2*CHUNK)+'B',data),dtype = 'b')[::2]+128
         aS = str(data_int)
     
-        file = open("Auidio_1","a")
+        file = open('/home/makerghat/Anaconda/New/Audio_wave_data.csv','a')
         file.writelines(aS)
     
         line.set_ydata(data_int)
@@ -47,7 +47,7 @@ def task1():
 def task2():
     CHANNELS = 2
     
-    WAVE_OUTPUT_FILENAME = "file_1.wav"
+    WAVE_OUTPUT_FILENAME = "/home/makerghat/Anaconda/New/Audio_in_MP3.wav"
  
     audio = pyaudio.PyAudio()
  
@@ -76,12 +76,29 @@ def task2():
     waveFile.setframerate(RATE)
     waveFile.writeframes(b''.join(frames))
     waveFile.close()
+    
+    
+def task3():
+    aD = serial.Serial('/dev/ttyACM0',9600)
+   
+    while True:
+        while(aD.inWaiting()==0):
+            pass
+        #time.sleep(1)
+        aS = aD.readline().decode('ascii')
+
+        dataArray = aS.split(' ')
+        print(aS)
+        file = open('/home/makerghat/Anaconda/New/Ardiuno_data.csv','a')
+        file.writelines(aS)
 
 if __name__ == "__main__":
     t1 =mltp.Process(target = task1)
     t2 =mltp.Process(target = task2)
+    t3 =mltp.Process(target = task3)
     t1.start()
     t2.start()
+    t3.start()
     t = RECORD_SECONDS
     while t >= 0:
         print(t, end='...')
@@ -89,7 +106,8 @@ if __name__ == "__main__":
         t -= 1
         if t == 0:
             t1.terminate()
-            return True 
+            t3.terminate()
     t1.join()
     t2.join()
-print("Done")
+    t3.join()
+print(' \n Program worked successfully Done \n')
