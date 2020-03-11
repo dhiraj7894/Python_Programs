@@ -5,14 +5,25 @@ import matplotlib.pyplot as plt #importing matplotlib for ploting graphs
 import wave
 import multiprocessing as mltp
 import time
-import serial  
-
+import serial 
+from drawnow import*                                                    #import new lib drawnow
+import pandas as pd                                                     #import pandas
 
 CHUNK = 500 * 2 
 FORMAT = pyaudio.paInt16
 RATE = 44100 
 
-RECORD_SECONDS = 1
+RECORD_SECONDS = 50
+
+aD = serial.Serial('/dev/ttyACM0',9600)
+L = []
+tmpF = []
+aX = []
+aY = []
+aZ = []
+
+plt.ion()
+#cnt = 0
 
 def task1():
     %matplotlib tk
@@ -37,7 +48,7 @@ def task1():
         data_int = np.array(struct.unpack(str(2*CHUNK)+'B',data),dtype = 'b')[::2]+128
         aS = str(data_int)
     
-        file = open('/home/makerghat/Anaconda/New/Audio_wave_data.csv','a')
+        file = open('/home/dhiraj_gt/SynthticSensor/Audio_wave_data.csv','a')
         file.writelines(aS)
     
         line.set_ydata(data_int)
@@ -47,7 +58,7 @@ def task1():
 def task2():
     CHANNELS = 2
     
-    WAVE_OUTPUT_FILENAME = "/home/makerghat/Anaconda/New/Audio_in_MP3.wav"
+    WAVE_OUTPUT_FILENAME = "/home/dhiraj_gt/SynthticSensor/Audio_in_MP3.wav"
  
     audio = pyaudio.PyAudio()
  
@@ -79,18 +90,54 @@ def task2():
     
     
 def task3():
-    aD = serial.Serial('/dev/ttyACM0',9600)
-   
+    %matplotlib tk  
+    def plotVal():
+        plt.plot(tmpF, linestyle = ':' ,label = 'Temperature', color = "red", linewidth=3.5)
+        plt.plot(L, linestyle = '--', label = 'Light Data', color = "green")
+        plt.plot(aX, linestyle = '-.', label = 'Accelerometer X', color = "yellow")
+        plt.plot(aY, linestyle = '-.', label = 'Accelerometer Y', color = "blue")
+        plt.plot(aZ, linestyle = '-.', label = 'Accelerometer Z', color = "black")
+
+        #plt.plot(L)
+        plt.title('Serial Data from Arduino')
+
+        plt.grid(True)
+        plt.ylabel('Tempe, Ligh, X, Y, Z')
+        #plt.plot(tmpF, 'rx-', labl = 'values')
+        plt.legend(loc = 'upper right')
+    
     while True:
         while(aD.inWaiting()==0):
             pass
-        #time.sleep(1)
-        aS = aD.readline().decode('ascii')
-
+        #aD.flushInput()
+        aS = aD.readline()[:].decode('ascii')
+        time.sleep(1)
         dataArray = aS.split(' ')
-        print(aS)
-        file = open('/home/makerghat/Anaconda/New/Ardiuno_data.csv','a')
-        file.writelines(aS)
+        tmp = dataArray[0]
+        LED = dataArray[1]
+        x = dataArray[2]
+        y = dataArray[3]
+        z = dataArray[4]
+        tmpF.append(tmp)
+        L.append(LED)
+        aX.append(x)
+        aY.append(y)
+        aZ.append(z)
+        dfTmp = pd.DataFrame(tmpF)
+        dfL = pd.DataFrame(L)
+        dfAxyz = pd.DataFrame(aX, aY)
+
+        dfTmp.to_csv('/home/dhiraj_gt/SynthticSensor/Temprature.csv')
+        dfL.to_csv('/home/dhiraj_gt/SynthticSensor/Light.csv')
+        dfAxyz.to_csv('/home/dhiraj_gt/SynthticSensor/Accelerometer.csv')
+        drawnow(plotVal)
+        '''cnt = cnt+1
+        if (cnt > 50):
+            tmpF.pop(0)
+            L.pop(0)
+            aX.pop(0)
+            aY.pop(0)
+            aZ.pop(0)'''
 
 if __name__ == "__main__":
     t1 =mltp.Process(target = task1)
