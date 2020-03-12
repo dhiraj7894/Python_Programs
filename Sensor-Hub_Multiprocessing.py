@@ -9,13 +9,14 @@ import serial
 from drawnow import*                                                    #import new lib drawnow
 import pandas as pd                                                     #import pandas
 
-CHUNK = 500 * 2 
-FORMAT = pyaudio.paInt16
-RATE = 44100 
 
-RECORD_SECONDS = 50
+CHUNK = 500 * 2 #Take small piece of audio data.
+FORMAT = pyaudio.paInt16 #set the format of audio it should be in int value.
+RATE = 44100 #what will be frame rate like we use Hz or KHz
 
-aD = serial.Serial('/dev/ttyACM0',9600)
+RECORD_SECONDS = 50 #interval of time how much second it will execute.
+
+aD = serial.Serial('/dev/ttyACM0',9600) #set input source of Arduino
 L = []
 tmpF = []
 aX = []
@@ -23,11 +24,9 @@ aY = []
 aZ = []
 
 plt.ion()
-#cnt = 0
-
-def task1():
-    %matplotlib tk
-    CHANNELS = 1
+def task1(): # task for ploting audio data
+    %matplotlib tk #open window for showing graph of frequency 
+    CHANNELS = 1 # select channel number for input audio.
     p = pyaudio.PyAudio()
     steam = p.open(
         format = FORMAT,
@@ -37,7 +36,7 @@ def task1():
         output = True,
         frames_per_buffer=CHUNK
         )
-    fig, ax =plt.subplots()
+    fig, ax =plt.subplots() 
     x = np.arange(0, 2 * CHUNK, 2)
     line, =ax.plot(x,np.random.rand(CHUNK))
     ax.set_ylim(0,255)
@@ -55,7 +54,7 @@ def task1():
         fig.canvas.draw()
         fig.canvas.flush_events()
         
-def task2():
+def task2(): #store recorded Audio in wave form
     CHANNELS = 2
     
     WAVE_OUTPUT_FILENAME = "/home/dhiraj_gt/SynthticSensor/Audio_in_MP3.wav"
@@ -89,7 +88,7 @@ def task2():
     waveFile.close()
     
     
-def task3():
+def task3(): #collect Arduino data and plot the graph as well as store it in excel format
     %matplotlib tk  
     def plotVal():
         plt.plot(tmpF, linestyle = ':' ,label = 'Temperature', color = "red", linewidth=3.5)
@@ -139,7 +138,7 @@ def task3():
             aY.pop(0)
             aZ.pop(0)'''
 
-if __name__ == "__main__":
+if __name__ == "__main__": #multiprocessing task
     t1 =mltp.Process(target = task1)
     t2 =mltp.Process(target = task2)
     t3 =mltp.Process(target = task3)
